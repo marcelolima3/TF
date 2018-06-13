@@ -25,7 +25,6 @@ public class ServerHandlers {
     public String group;
     public SpreadGroup state_sender;
     public List<Object> buffer;
-    public boolean withState;
 
 
     public ServerHandlers(Transport t, Spread s, SingleThreadContext tcspread, int id, String group) {
@@ -36,7 +35,6 @@ public class ServerHandlers {
         this.s = s;
         this.group = group;
         this.buffer = new ArrayList<>();
-        this.withState = false;
     }
 
     public void exe(){
@@ -48,47 +46,39 @@ public class ServerHandlers {
     private void registerSpreadHandlers(){
         tcspread.execute(() -> {
             s.handler(MembershipInfo.class, (sender, msg) ->  {
+                if(msg.getMembers().length == 1)
+                    registerMainHandlers();
+
                 if(msg.isCausedByJoin() && s.getPrivateGroup().equals(msg.getJoined())){
                     requestState();
-                }
-            });
-            s.handler(NewTaskReq.class, (sender, msg) -> {
-                if(this.withState){
-                    System.out.println("NewTask received");
-                }
-                else{
-
-                }
-            });
-            s.handler(GetTaskReq.class, (sender, msg) -> {
-                if(this.withState){
-                    System.out.println("GetTask received");
-                }
-                else{
-
-                }
-            });
-            s.handler(EndTaskReq.class, (sender, msg) -> {
-                if(this.withState){
-                    System.out.println("EndTask received");
-                }
-                else{
-
-                }
-            });
-            s.handler(StateReq.class, (sender, msg) -> {
-                System.out.println("StateReq received");
-                if(this.withState){
-                    stateTransfer(sender.getSender());
                 }
             });
             s.handler(StateRep.class, (sender, msg) -> {
                 System.out.println("StateRep received");
                 this.scheduler = getState(msg);
+                registerMainHandlers();
             });
             s.open().thenRun(() -> {
                 System.out.println("Starting...");
                 s.join(this.group);
+            });
+        });
+    }
+
+    private void registerMainHandlers(){
+        tcspread.execute(() -> {
+            s.handler(NewTaskReq.class, (sender, msg) -> {
+                System.out.println("NewTask received");
+            });
+            s.handler(GetTaskReq.class, (sender, msg) -> {
+                System.out.println("GetTask received");
+            });
+            s.handler(EndTaskReq.class, (sender, msg) -> {
+                System.out.println("EndTask received");
+            });
+            s.handler(StateReq.class, (sender, msg) -> {
+                System.out.println("StateReq received");
+                stateTransfer(sender.getSender());
             });
         });
     }
