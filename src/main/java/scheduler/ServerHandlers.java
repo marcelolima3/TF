@@ -49,8 +49,7 @@ public class ServerHandlers {
         tcspread.execute(() -> {
             s.handler(MembershipInfo.class, (sender, msg) ->  {
                 if(msg.isCausedByJoin() && s.getPrivateGroup().equals(msg.getJoined())){
-                    Scheduler s = requestState();
-                    this.scheduler = s;
+                    requestState();
                 }
             });
             s.handler(NewTaskReq.class, (sender, msg) -> {
@@ -83,11 +82,9 @@ public class ServerHandlers {
                     stateTransfer(sender.getSender());
                 }
             });
-            s.handler(StateReq.class, (sender, msg) -> {
+            s.handler(StateRep.class, (sender, msg) -> {
                 System.out.println("StateRep received");
-                if(this.withState){
-                    stateTransfer(sender.getSender());
-                }
+                this.scheduler = getState(msg);
             });
             s.open().thenRun(() -> {
                 System.out.println("Starting...");
@@ -96,9 +93,12 @@ public class ServerHandlers {
         });
     }
 
-    private Scheduler requestState(){
-
+    private Scheduler getState(StateRep msg) {
         return null;
+    }
+
+    private void requestState(){
+
     }
 
     private void stateTransfer(SpreadGroup joined){
