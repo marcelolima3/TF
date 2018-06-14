@@ -104,12 +104,13 @@ public class RemoteScheduler implements Scheduler {
     @Override
     public Task getTask(String client_id) {
         try {
+            GetTaskRep gtr;
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
-            // TODO
-            // send msg
+            sendMsg(this.server_group, new GetTaskReq(id_req));
 
-            return (Task) cf.get();
+            gtr = (GetTaskRep) cf.get();
+            return gtr.res;
         } catch (Exception e) { e.printStackTrace(); }
         return null;
     }
@@ -117,12 +118,13 @@ public class RemoteScheduler implements Scheduler {
     @Override
     public boolean endTask(Task t) {
         try {
+            EndTaskRep etr;
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
-            // TODO
-            // send msg
+            sendMsg(this.server_group, new EndTaskReq(id_req, t));
 
-            return (boolean) cf.get();
+            etr = (EndTaskRep) cf.get();
+            return etr.res;
         } catch (Exception e) { e.printStackTrace(); }
         return false;
     }

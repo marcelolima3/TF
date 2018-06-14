@@ -57,6 +57,17 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         return false;
     }
 
+    // Shift client tasks from processing to waiting
+    public synchronized void shiftTasksFromClient(String client){
+        for(Iterator<Map.Entry<Task, String>> it = processing_tasks.entrySet().iterator(); it.hasNext(); ){
+            Map.Entry<Task, String> entry = it.next();
+            if(entry.getValue().equals(client)){
+                it.remove();
+                waiting_tasks.addFirst(entry.getKey());
+            }
+        }
+    }
+
     // Shift task from processing to waiting (if client fails)
     public synchronized void shiftTask(Task task){
         this.processing_tasks.remove(task);

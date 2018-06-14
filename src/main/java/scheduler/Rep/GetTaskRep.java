@@ -4,28 +4,28 @@ import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
 import io.atomix.catalyst.serializer.CatalystSerializable;
 import io.atomix.catalyst.serializer.Serializer;
+import scheduler.Impl.Task;
 
 public class GetTaskRep implements CatalystSerializable {
-    // TODO
-    public double value;
     public int id;
+    public Task res;
 
     public GetTaskRep() {}
 
-    public GetTaskRep(double value, int id){
-        this.value = value;
+    public GetTaskRep(int id, Task res){
         this.id = id;
+        this.res = res;
     }
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
-        bufferOutput.writeDouble(value);
         bufferOutput.writeInt(id);
+        serializer.writeObject(res, bufferOutput);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
-        this.value = bufferInput.readDouble();
         this.id = bufferInput.readInt();
+        this.res = serializer.readObject(bufferInput);
     }
 }

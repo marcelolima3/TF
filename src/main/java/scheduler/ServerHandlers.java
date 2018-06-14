@@ -101,17 +101,19 @@ public class ServerHandlers {
             s.handler(GetTaskReq.class, (sender, msg) -> {
                 System.out.println("GetTask received-Main");
 
-                // TODO
+                Task t = scheduler.getTask(sender.getSender().toString());
+                sendMsg(sender.getSender(), new GetTaskRep(msg.id, t));
             });
             s.handler(EndTaskReq.class, (sender, msg) -> {
                 System.out.println("EndTask received-Main");
 
-                // TODO
+                boolean res = scheduler.endTask(msg.t);
+                sendMsg(sender.getSender(), new EndTaskRep(msg.id, res));
             });
             s.handler(ClientFailure.class, (sender, msg) -> {
                 System.out.println("ClientFailure received");
 
-                // TODO
+                ((SchedulerImp)scheduler).shiftTasksFromClient(sender.getSender().toString());
             });
             s.handler(StateReq.class, (sender, msg) -> {
                 System.out.println("StateReq received-Main");
