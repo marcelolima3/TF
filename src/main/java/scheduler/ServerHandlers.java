@@ -64,9 +64,12 @@ public class ServerHandlers {
                     registerMainHandlers();
                 }
             });
-            s.handler(NewTaskReq.class, (sender, msg) -> buffer.add(new RequestInfo(sender, msg)));
-            s.handler(GetTaskReq.class, (sender, msg) -> buffer.add(new RequestInfo(sender, msg)));
-            s.handler(EndTaskReq.class, (sender, msg) -> buffer.add(new RequestInfo(sender, msg)));
+            s.handler(NewTaskReq.class, (sender, msg) ->
+                    buffer.add(new RequestInfo(sender, msg)));
+            s.handler(GetTaskReq.class, (sender, msg) ->
+                    buffer.add(new RequestInfo(sender, msg)));
+            s.handler(EndTaskReq.class, (sender, msg) ->
+                    buffer.add(new RequestInfo(sender, msg)));
             s.open().thenRun(() -> {
                 System.out.println("Starting...");
                 s.join(this.group);
