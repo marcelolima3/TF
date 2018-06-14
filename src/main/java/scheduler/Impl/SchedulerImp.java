@@ -20,22 +20,6 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         this.processing_tasks = new LinkedList<Task>();
     }
 
-    public List<Task> getWaitingTasks() {
-        return waiting_tasks;
-    }
-
-    public void setWaitingTasks(LinkedList<Task> waiting_tasks) {
-        this.waiting_tasks = waiting_tasks;
-    }
-
-    public List<Task> getProcessingTasks() {
-        return processing_tasks;
-    }
-
-    public void setProcessingTasks(LinkedList<Task> processing_tasks) {
-        this.processing_tasks = processing_tasks;
-    }
-
     // Add a new task to process
     @Override
     public synchronized void newTask(String url) {
@@ -45,19 +29,21 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
 
     // Get next task to be processed
     @Override
-    public synchronized void getTask() {
+    public synchronized Task getTask() {
         try{
             Task next_task = this.waiting_tasks.removeFirst();
             this.processing_tasks.add(next_task);
+            return next_task;
         }
         catch(NoSuchElementException exception){
             exception.getStackTrace();
         }
+        return null;
     }
 
     // End next task on processing_tasks
     @Override
-    public synchronized void endTask() {
+    public synchronized void endTask(Task t) {
         try{
             Task task = this.processing_tasks.removeFirst();
         }
@@ -98,6 +84,21 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         }
     }
 
+    public List<Task> getWaitingTasks() {
+        return waiting_tasks;
+    }
+
+    public void setWaitingTasks(LinkedList<Task> waiting_tasks) {
+        this.waiting_tasks = waiting_tasks;
+    }
+
+    public List<Task> getProcessingTasks() {
+        return processing_tasks;
+    }
+
+    public void setProcessingTasks(LinkedList<Task> processing_tasks) {
+        this.processing_tasks = processing_tasks;
+    }
 
     /*
     public static void main(String[] args){

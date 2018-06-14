@@ -12,6 +12,6 @@ import java.util.List;
 
 public interface Scheduler {
     public void newTask(String url);
-    public void getTask();
-    public void endTask();
+    public Task getTask();
+    public void endTask(Task t);
 }
