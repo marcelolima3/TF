@@ -94,15 +94,24 @@ public class ServerHandlers {
         tcspread.execute(() -> {
             s.handler(NewTaskReq.class, (sender, msg) -> {
                 System.out.println("NewTask received-Main");
+
+                boolean res = scheduler.newTask(msg.url);
+                sendMsg(sender.getSender(), new NewTaskRep(msg.id, res));
             });
             s.handler(GetTaskReq.class, (sender, msg) -> {
                 System.out.println("GetTask received-Main");
+
+                // TODO
             });
             s.handler(EndTaskReq.class, (sender, msg) -> {
                 System.out.println("EndTask received-Main");
+
+                // TODO
             });
             s.handler(ClientFailure.class, (sender, msg) -> {
                 System.out.println("ClientFailure received");
+
+                // TODO
             });
             s.handler(StateReq.class, (sender, msg) -> {
                 System.out.println("StateReq received-Main");

@@ -6,6 +6,7 @@ import io.atomix.catalyst.serializer.CatalystSerializable;
 import io.atomix.catalyst.serializer.Serializer;
 
 public class GetTaskRep implements CatalystSerializable {
+    // TODO
     public double value;
     public int id;
 

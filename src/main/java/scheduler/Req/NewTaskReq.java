@@ -7,24 +7,24 @@ import io.atomix.catalyst.serializer.Serializer;
 
 public class NewTaskReq implements CatalystSerializable {
     public int id;
-    public int user_id;
+    public String url;
 
     public NewTaskReq() {}
 
-    public NewTaskReq(int id, int user_id) {
+    public NewTaskReq(int id, String url) {
         this.id = id;
-        this.user_id = user_id;
+        this.url = url;
     }
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
         bufferOutput.writeInt(id);
-        bufferOutput.writeInt(user_id);
+        bufferOutput.writeString(url);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
         this.id = bufferInput.readInt();
-        this.user_id = bufferInput.readInt();
+        this.url = bufferInput.readString();
     }
 }

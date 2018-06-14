@@ -6,25 +6,25 @@ import io.atomix.catalyst.serializer.CatalystSerializable;
 import io.atomix.catalyst.serializer.Serializer;
 
 public class NewTaskRep implements CatalystSerializable {
-    public boolean isValid;
     public int id;
+    public boolean res;
 
     public NewTaskRep() {}
 
-    public NewTaskRep(boolean isValid, int id){
-        this.isValid = isValid;
+    public NewTaskRep(int id, boolean res){
+        this.res = res;
         this.id = id;
     }
 
     @Override
     public void writeObject(BufferOutput<?> bufferOutput, Serializer serializer) {
-        bufferOutput.writeBoolean(isValid);
+        bufferOutput.writeBoolean(res);
         bufferOutput.writeInt(id);
     }
 
     @Override
     public void readObject(BufferInput<?> bufferInput, Serializer serializer) {
-        this.isValid = bufferInput.readBoolean();
+        this.res = bufferInput.readBoolean();
         this.id = bufferInput.readInt();
     }
 }

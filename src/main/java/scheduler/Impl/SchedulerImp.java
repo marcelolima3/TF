@@ -21,9 +21,15 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
 
     // Add a new task to process
     @Override
-    public synchronized void newTask(String url) {
-        Task task = new Task(url);
-        this.waiting_tasks.add(task);
+    public synchronized boolean newTask(String url) {
+        try {
+            Task task = new Task(url);
+            this.waiting_tasks.add(task);
+            return true;
+        }
+        catch (Exception e){ e.printStackTrace(); }
+
+        return false;
     }
 
     // Get next task to be processed
@@ -34,22 +40,21 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
             this.processing_tasks.put(next_task, client_id);
             return next_task;
         }
-        catch(NoSuchElementException exception){
-            exception.getStackTrace();
-        }
+        catch(NoSuchElementException exception){ exception.getStackTrace(); }
+
         return null;
     }
 
     // End next task on processing_tasks
     @Override
-    public synchronized void endTask(Task t) {
-
+    public synchronized boolean endTask(Task t) {
         try{
             processing_tasks.remove(t);
+            return true;
         }
-        catch(NoSuchElementException exception){
-            exception.getStackTrace();
-        }
+        catch(NoSuchElementException exception){ exception.getStackTrace(); }
+
+        return false;
     }
 
     // Shift task from processing to waiting (if client fails)
@@ -64,9 +69,11 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         for(Task t: waiting_tasks)
             serializer.writeObject(t, buffer);
 
-        //buffer.writeInt(processing_tasks.size());
-        //for(Task t: processing_tasks)
-        //    serializer.writeObject(t, buffer);
+        buffer.writeInt(processing_tasks.size());
+        for(Map.Entry<Task, String> e: processing_tasks.entrySet()){
+            serializer.writeObject(e.getKey(), buffer);
+            buffer.writeString(e.getValue());
+        }
     }
 
     @Override
@@ -78,10 +85,11 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         }
 
         n_tasks = buffer.readInt();
-        //for(int i = 0; i < n_tasks; i++) {
-        //    Task t = serializer.readObject(buffer);
-        //    processing_tasks.add(t);
-        //}
+        for(int i = 0; i < n_tasks; i++) {
+            Task t = serializer.readObject(buffer);
+            String client = buffer.readString();
+            processing_tasks.put(t, client);
+        }
     }
 
     public List<Task> getWaitingTasks() {

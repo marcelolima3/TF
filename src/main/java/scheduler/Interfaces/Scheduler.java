@@ -8,10 +8,10 @@ package scheduler.Interfaces;
 import scheduler.Impl.Task;
 
 public interface Scheduler {
-    public void newTask(String url);
-
+    // Create a new task
+    boolean newTask(String url);
     // Get next task to be processed
     Task getTask(String client_id);
-
-    public void endTask(Task t);
+    // End a task
+    boolean endTask(Task t);
 }

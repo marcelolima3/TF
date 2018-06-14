@@ -6,6 +6,7 @@ import io.atomix.catalyst.serializer.CatalystSerializable;
 import io.atomix.catalyst.serializer.Serializer;
 
 public class EndTaskRep implements CatalystSerializable {
+    // TODO
     public boolean isValid;
     public int id;
 
