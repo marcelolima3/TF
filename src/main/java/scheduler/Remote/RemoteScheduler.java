@@ -91,28 +91,32 @@ public class RemoteScheduler implements Scheduler {
 
     @Override
     public void newTask(String url) {
-        cf = new CompletableFuture();
-
         try {
+            cf = new CompletableFuture();
+            // TODO add id in each msg
+            sendMsg(this.server_group, new NewTaskReq());
+
             cf.get();
         } catch (Exception e) { e.printStackTrace(); }
     }
 
     @Override
     public Task getTask() {
-        cf = new CompletableFuture();
-
         try {
-            cf.get();
+            cf = new CompletableFuture();
+            sendMsg(this.server_group, new GetTaskReq());
+
+            return (Task) cf.get();
         } catch (Exception e) { e.printStackTrace(); }
         return null;
     }
 
     @Override
     public void endTask(Task t) {
-        cf = new CompletableFuture();
-
         try {
+            cf = new CompletableFuture();
+            sendMsg(this.server_group, new EndTaskRep());
+
             cf.get();
         } catch (Exception e) { e.printStackTrace(); }
     }
