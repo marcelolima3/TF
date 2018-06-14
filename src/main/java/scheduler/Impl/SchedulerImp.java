@@ -6,18 +6,17 @@ import io.atomix.catalyst.serializer.CatalystSerializable;
 import io.atomix.catalyst.serializer.Serializer;
 import scheduler.Interfaces.Scheduler;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class SchedulerImp implements Scheduler, CatalystSerializable {
+
     private LinkedList<Task> waiting_tasks;
-    private LinkedList<Task> processing_tasks;
+    private Map<Task,String> processing_tasks;
 
     public SchedulerImp() {
         // we should prob use Collections.synchronizedList(new LinkedList(...));
         this.waiting_tasks = new LinkedList<Task>();
-        this.processing_tasks = new LinkedList<Task>();
+        this.processing_tasks = new HashMap<Task,String>();
     }
 
     // Add a new task to process
@@ -29,10 +28,10 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
 
     // Get next task to be processed
     @Override
-    public synchronized Task getTask() {
+    public synchronized Task getTask(String client_id) {
         try{
             Task next_task = this.waiting_tasks.removeFirst();
-            this.processing_tasks.add(next_task);
+            this.processing_tasks.put(next_task, client_id);
             return next_task;
         }
         catch(NoSuchElementException exception){
@@ -44,8 +43,9 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
     // End next task on processing_tasks
     @Override
     public synchronized void endTask(Task t) {
+
         try{
-            Task task = this.processing_tasks.removeFirst();
+            processing_tasks.remove(t);
         }
         catch(NoSuchElementException exception){
             exception.getStackTrace();
@@ -64,9 +64,9 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         for(Task t: waiting_tasks)
             serializer.writeObject(t, buffer);
 
-        buffer.writeInt(processing_tasks.size());
-        for(Task t: processing_tasks)
-            serializer.writeObject(t, buffer);
+        //buffer.writeInt(processing_tasks.size());
+        //for(Task t: processing_tasks)
+        //    serializer.writeObject(t, buffer);
     }
 
     @Override
@@ -78,10 +78,10 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         }
 
         n_tasks = buffer.readInt();
-        for(int i = 0; i < n_tasks; i++) {
-            Task t = serializer.readObject(buffer);
-            processing_tasks.add(t);
-        }
+        //for(int i = 0; i < n_tasks; i++) {
+        //    Task t = serializer.readObject(buffer);
+        //    processing_tasks.add(t);
+        //}
     }
 
     public List<Task> getWaitingTasks() {
@@ -92,18 +92,19 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         this.waiting_tasks = waiting_tasks;
     }
 
-    public List<Task> getProcessingTasks() {
+    public Map<Task, String> getProcessingTasks() {
         return processing_tasks;
     }
 
-    public void setProcessingTasks(LinkedList<Task> processing_tasks) {
+    public void setProcessingTasks(Map<Task, String> processing_tasks) {
         this.processing_tasks = processing_tasks;
     }
 
-    /*
+
     public static void main(String[] args){
 
         SchedulerImp scheduler = new SchedulerImp();
+        Task task1 = null;
 
         // Adding tasks
         for(int i = 0; i < 5; i++)
@@ -113,37 +114,37 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         System.out.println("Waiting tasks");
         scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
         System.out.println("Processing tasks");
-        scheduler.getProcessingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
+        scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
 
         // Processing tasks
         for(int i = 0; i < 3; i++)
-            scheduler.getTask();
+            task1 = scheduler.getTask("client_1");
 
         System.out.println();
         System.out.println("Waiting tasks");
         scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
         System.out.println("Processing tasks");
-        scheduler.getProcessingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
+        scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
 
         // Ending tasks
-        for(int i = 0; i < 2; i++)
-            scheduler.endTask();
+        scheduler.endTask(task1);
 
         System.out.println("");
         System.out.println("Waiting tasks");
         scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
         System.out.println("Processing tasks");
-        scheduler.getProcessingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
+        scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
 
         // Testing task shift whenever a client fails
-        Task task_0 = scheduler.getProcessingTasks().get(0);
-        scheduler.shiftTask(task_0);
+        Map.Entry<Task,String> entry = scheduler.getProcessingTasks().entrySet().iterator().next();
+        Task task2 = entry.getKey();
+        scheduler.shiftTask(task2);
 
         System.out.println("");
         System.out.println("Waiting tasks");
         scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
         System.out.println("Processing tasks");
-        scheduler.getProcessingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
+        scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
 
-    }*/
+    }
 }

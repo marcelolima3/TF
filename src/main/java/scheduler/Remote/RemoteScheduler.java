@@ -10,9 +10,6 @@ import scheduler.Req.GetTaskReq;
 import io.atomix.catalyst.concurrent.SingleThreadContext;
 import io.atomix.catalyst.concurrent.ThreadContext;
 import io.atomix.catalyst.serializer.Serializer;
-import io.atomix.catalyst.transport.Address;
-import io.atomix.catalyst.transport.Transport;
-import io.atomix.catalyst.transport.netty.NettyTransport;
 import pt.haslab.ekit.Spread;
 import scheduler.Req.NewTaskReq;
 import spread.SpreadGroup;
@@ -90,6 +87,10 @@ public class RemoteScheduler implements Scheduler {
     }
 
     @Override
+    public Task getTask(String client_id) {
+        return null;
+    }
+
     public Task getTask() {
         cf = new CompletableFuture();
 
