@@ -71,8 +71,9 @@ public class RemoteScheduler implements Scheduler {
         tc.serializer().register(EndTaskReq.class);
     }
 
+
     @Override
-    public void newTask() {
+    public void newTask(String url) {
 
     }
 

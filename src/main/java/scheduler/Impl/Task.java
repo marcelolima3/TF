@@ -22,6 +22,10 @@ public class Task implements CatalystSerializable {
         this.url = url;
     }
 
+    public void run() throws InterruptedException {
+        Thread.sleep((long)(Math.random() * 1000));
+    }
+
     @Override
     public void writeObject(BufferOutput<?> buffer, Serializer serializer) {
         buffer.writeString(this.url);
