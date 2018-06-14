@@ -67,6 +67,12 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         }
     }
 
+    // Shift task from processing to waiting (if client fails)
+    public synchronized void shiftTask(Task task){
+        this.processing_tasks.remove(task);
+        this.waiting_tasks.addFirst(task);
+    }
+
     @Override
     public void writeObject(BufferOutput<?> buffer, Serializer serializer) {
 
@@ -107,6 +113,18 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
         System.out.println("Processing tasks");
         scheduler.getProcessingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
+
+
+        Task task_0 = scheduler.getProcessingTasks().get(0);
+        scheduler.shiftTask(task_0);
+
+        System.out.println("");
+        System.out.println("Waiting tasks");
+        scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
+        System.out.println("Processing tasks");
+        scheduler.getProcessingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
+
+
 
     }
 }
