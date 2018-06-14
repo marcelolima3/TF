@@ -1,5 +1,6 @@
 package scheduler;
 
+import scheduler.Impl.RequestInfo;
 import scheduler.Impl.SchedulerImp;
 import scheduler.Interfaces.Scheduler;
 import scheduler.Rep.*;
@@ -24,7 +25,7 @@ public class ServerHandlers {
     public Spread s;
     public String group;
     public SpreadGroup state_sender;
-    public List<Object> buffer;
+    public List<RequestInfo> buffer;
 
 
     public ServerHandlers(Transport t, Spread s, SingleThreadContext tcspread, int id, String group) {
@@ -35,6 +36,7 @@ public class ServerHandlers {
         this.s = s;
         this.group = group;
         this.buffer = new ArrayList<>();
+        this.state_sender = null;
     }
 
     public void exe(){
@@ -54,15 +56,36 @@ public class ServerHandlers {
                 }
             });
             s.handler(StateRep.class, (sender, msg) -> {
-                System.out.println("StateRep received");
-                this.scheduler = getState(msg);
-                registerMainHandlers();
+                if(this.state_sender == null) {
+                    this.state_sender = sender.getSender();
+                    System.out.println("StateRep received");
+                    this.scheduler = getState(msg);
+                    processBuffer();
+                    registerMainHandlers();
+                }
             });
+            s.handler(NewTaskReq.class, (sender, msg) -> buffer.add(new RequestInfo(sender, msg)));
+            s.handler(GetTaskReq.class, (sender, msg) -> buffer.add(new RequestInfo(sender, msg)));
+            s.handler(EndTaskReq.class, (sender, msg) -> buffer.add(new RequestInfo(sender, msg)));
             s.open().thenRun(() -> {
                 System.out.println("Starting...");
                 s.join(this.group);
             });
         });
+    }
+
+    private void processBuffer() {
+        for(RequestInfo ri: buffer){
+            if(ri.getMsg() instanceof NewTaskReq){
+                System.out.println("NewTask received");
+            }
+            else if(ri.getMsg() instanceof GetTaskReq){
+                System.out.println("GetTask received");
+            }
+            else if(ri.getMsg() instanceof EndTaskReq){
+                System.out.println("EndTask received");
+            }
+        }
     }
 
     private void registerMainHandlers(){
