@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public class SchedulerImp implements Scheduler, CatalystSerializable {
-
     private LinkedList<Task> waiting_tasks;
     private LinkedList<Task> processing_tasks;
 
@@ -75,14 +74,32 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
 
     @Override
     public void writeObject(BufferOutput<?> buffer, Serializer serializer) {
+        buffer.writeInt(waiting_tasks.size());
+        for(Task t: waiting_tasks)
+            serializer.writeObject(t, buffer);
 
+        buffer.writeInt(processing_tasks.size());
+        for(Task t: processing_tasks)
+            serializer.writeObject(t, buffer);
     }
 
     @Override
     public void readObject(BufferInput<?> buffer, Serializer serializer) {
+        int n_tasks = buffer.readInt();
+        for(int i = 0; i < n_tasks; i++) {
+            Task t = serializer.readObject(buffer);
+            waiting_tasks.add(t);
+        }
 
+        n_tasks = buffer.readInt();
+        for(int i = 0; i < n_tasks; i++) {
+            Task t = serializer.readObject(buffer);
+            processing_tasks.add(t);
+        }
     }
 
+
+    /*
     public static void main(String[] args){
 
         SchedulerImp scheduler = new SchedulerImp();
@@ -127,7 +144,5 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         System.out.println("Processing tasks");
         scheduler.getProcessingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
 
-
-
-    }
+    }*/
 }
