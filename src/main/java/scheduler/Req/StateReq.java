@@ -7,7 +7,7 @@ import io.atomix.catalyst.serializer.Serializer;
 
 public class StateReq implements CatalystSerializable {
 
-
+    public StateReq(){ }
 
     @Override
     public void writeObject(BufferOutput<?> buffer, Serializer serializer) {

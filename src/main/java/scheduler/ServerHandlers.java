@@ -2,6 +2,7 @@ package scheduler;
 
 import scheduler.Impl.RequestInfo;
 import scheduler.Impl.SchedulerImp;
+import scheduler.Impl.Task;
 import scheduler.Interfaces.Scheduler;
 import scheduler.Rep.*;
 import scheduler.Req.*;
@@ -50,10 +51,8 @@ public class ServerHandlers {
             s.handler(MembershipInfo.class, (sender, msg) ->  {
                 if(msg.getMembers().length == 1)
                     registerMainHandlers();
-
-                if(msg.isCausedByJoin() && s.getPrivateGroup().equals(msg.getJoined())){
-                    requestState();
-                }
+                else if(msg.isCausedByJoin() && s.getPrivateGroup().equals(msg.getJoined()))
+                    sendMsg(this.group, new StateReq());
             });
             s.handler(StateRep.class, (sender, msg) -> {
                 if(this.state_sender == null) {
@@ -110,18 +109,23 @@ public class ServerHandlers {
     }
 
     private Scheduler getState(StateRep msg) {
-        return null;
-    }
-
-    private void requestState(){
-
+        // TODO implement state transfer for big data
+        return msg.scheduler;
     }
 
     private void stateTransfer(SpreadGroup joined){
-
+        // TODO implement state transfer for big data
+        sendMsg(joined, new StateRep(scheduler));
     }
 
     public void sendMsg(SpreadGroup group, Object msg){
+        SpreadMessage sm = new SpreadMessage();
+        sm.addGroup(group);
+        sm.setAgreed();
+        this.s.multicast(sm, msg);
+    }
+
+    public void sendMsg(String group, Object msg){
         SpreadMessage sm = new SpreadMessage();
         sm.addGroup(group);
         sm.setAgreed();
@@ -138,5 +142,7 @@ public class ServerHandlers {
         tcspread.serializer().register(NewTaskReq.class);
         tcspread.serializer().register(StateRep.class);
         tcspread.serializer().register(StateReq.class);
+        tcspread.serializer().register(SchedulerImp.class);
+        tcspread.serializer().register(Task.class);
     }
 }

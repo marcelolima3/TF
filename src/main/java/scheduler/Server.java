@@ -9,7 +9,6 @@ import pt.haslab.ekit.Spread;
 public class Server {
     public static void main(String[] args) throws Exception {
         int id = Integer.parseInt(args[0]);
-        System.out.println("ID: " + id);
 
         Transport t = new NettyTransport();
         SingleThreadContext tcspread = new SingleThreadContext("srv-%d", new Serializer());

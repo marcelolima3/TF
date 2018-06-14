@@ -1,8 +1,10 @@
 package scheduler.Remote;
 
 import scheduler.Interfaces.Scheduler;
+import scheduler.Rep.EndTaskRep;
 import scheduler.Rep.GetTaskRep;
 import scheduler.Rep.NewTaskRep;
+import scheduler.Req.EndTaskReq;
 import scheduler.Req.GetTaskReq;
 import io.atomix.catalyst.concurrent.SingleThreadContext;
 import io.atomix.catalyst.concurrent.ThreadContext;
@@ -11,6 +13,8 @@ import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.Transport;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import pt.haslab.ekit.Spread;
+import scheduler.Req.NewTaskReq;
+import spread.SpreadGroup;
 import spread.SpreadMessage;
 
 import java.util.concurrent.CompletableFuture;
@@ -25,69 +29,46 @@ public class RemoteScheduler implements Scheduler {
     private int id;
     
     public RemoteScheduler(int id) throws Exception {
-        Transport t = new NettyTransport();
         this.id = id;
         tc = new SingleThreadContext("srv-%d", new Serializer());
-        s = new Spread("user-"+this.id, false);
+        s = new Spread("user-" + this.id, false);
 
-        registeMsg();
-        registHandlers();
+        registerMsg();
+        registerHandlers();
     }
 
-    private void registHandlers() {
+    private void registerHandlers() {
         tc.execute(() -> {
             s.open().thenRun(() -> {
                 System.out.println("Starting...");
-                s.join("u"+this.id);
-            });
-            s.handler(String.class, (sender, msg) ->  {
-                System.out.println("Recebi: "+ msg + " de " + sender.getSender());
-                if(msg.contains("join"))
-                    broadcast("OK");
+                s.join("users" + this.id);
             });
             s.handler(GetTaskRep.class, (sender, msg) -> {
                 System.out.println("GetTask received");
-                if(msg.id == req_id.intValue())
-                    f.complete(msg);
             });
             s.handler(NewTaskRep.class, (sender, msg) -> {
                 System.out.println("NewTask received");
-                if(msg.id == req_id.intValue())
-                    f.complete(msg);
+            });
+            s.handler(EndTaskRep.class, (sender, msg) -> {
+                System.out.println("EndTask received");
             });
         });
     }
 
-    private void broadcast(Object msg){
-        send_msg(s, "g", msg);
-    }
-
-    public static void send_msg(Spread s, String group, Object msg){
+    public void sendMsg(SpreadGroup group, Object msg){
         SpreadMessage sm = new SpreadMessage();
         sm.addGroup(group);
-        s.multicast(sm, msg);
+        sm.setAgreed();
+        this.s.multicast(sm, msg);
     }
 
-    private void registeMsg(){
-        tc.serializer().register(Address.class);
+    private void registerMsg(){
         tc.serializer().register(GetTaskRep.class);
         tc.serializer().register(GetTaskReq.class);
         tc.serializer().register(NewTaskRep.class);
-    }
-
-    public double balance() {
-        tc.execute(() -> {
-            int req_id = this.req_id.incrementAndGet();
-            // fazer cenas
-            f = new CompletableFuture();
-        }).join();
-
-        try {
-            GetTaskRep r = (GetTaskRep) f.get();
-            return r.value;
-        } catch (Exception e) { e.printStackTrace(); }
-
-        return 0;
+        tc.serializer().register(NewTaskReq.class);
+        tc.serializer().register(EndTaskRep.class);
+        tc.serializer().register(EndTaskReq.class);
     }
 
     @Override
