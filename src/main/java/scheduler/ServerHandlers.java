@@ -93,19 +93,19 @@ public class ServerHandlers {
     private void registerMainHandlers(){
         tcspread.execute(() -> {
             s.handler(NewTaskReq.class, (sender, msg) -> {
-                System.out.println("NewTask received");
+                System.out.println("NewTask received-Main");
             });
             s.handler(GetTaskReq.class, (sender, msg) -> {
-                System.out.println("GetTask received");
+                System.out.println("GetTask received-Main");
             });
             s.handler(EndTaskReq.class, (sender, msg) -> {
-                System.out.println("EndTask received");
+                System.out.println("EndTask received-Main");
             });
             s.handler(ClientFailure.class, (sender, msg) -> {
                 System.out.println("ClientFailure received");
             });
             s.handler(StateReq.class, (sender, msg) -> {
-                System.out.println("StateReq received");
+                System.out.println("StateReq received-Main");
                 stateTransfer(sender.getSender());
             });
         });

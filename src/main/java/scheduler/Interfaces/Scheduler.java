@@ -5,12 +5,13 @@
  */
 package scheduler.Interfaces;
 
-/**
- *
- * @author Ricardo
- */
+import scheduler.Impl.Task;
+
+import java.util.LinkedList;
+import java.util.List;
+
 public interface Scheduler {
-    void newTask();
-    void getTask();
-    void endTask();
+    public void newTask(String url);
+    public Task getTask();
+    public void endTask(Task t);
 }

@@ -1,7 +1,7 @@
 package scheduler.Remote;
 
-import io.atomix.catalyst.transport.Client;
 import scheduler.Req.ClientFailure;
+import scheduler.Impl.Task;
 import scheduler.Interfaces.Scheduler;
 import scheduler.Rep.EndTaskRep;
 import scheduler.Rep.GetTaskRep;
@@ -14,8 +14,10 @@ import io.atomix.catalyst.serializer.Serializer;
 import pt.haslab.ekit.Spread;
 import scheduler.Req.NewTaskReq;
 import spread.MembershipInfo;
-import spread.SpreadGroup;
 import spread.SpreadMessage;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class RemoteScheduler implements Scheduler {
@@ -23,6 +25,8 @@ public class RemoteScheduler implements Scheduler {
     private final Spread s;
     private final String client_group;
     private final String server_group;
+    private AtomicInteger req_id;
+    private CompletableFuture cf;
     private int id;
 
     public RemoteScheduler(int id) throws Exception {
@@ -31,6 +35,7 @@ public class RemoteScheduler implements Scheduler {
         s = new Spread("user-" + this.id, true);
         this.server_group = "servers";
         this.client_group = "users";
+        req_id = new AtomicInteger(0);
 
         registerMsg();
         registerHandlers();
@@ -46,12 +51,18 @@ public class RemoteScheduler implements Scheduler {
             });
             s.handler(GetTaskRep.class, (sender, msg) -> {
                 System.out.println("GetTask received");
+                if(msg.id == req_id.intValue() && cf!=null)
+                    cf.complete(msg);
             });
             s.handler(NewTaskRep.class, (sender, msg) -> {
                 System.out.println("NewTask received");
+                if(msg.id == req_id.intValue() && cf!=null)
+                    cf.complete(msg);
             });
             s.handler(EndTaskRep.class, (sender, msg) -> {
                 System.out.println("EndTask received");
+                if(msg.id == req_id.intValue() && cf!=null)
+                    cf.complete(msg);
             });
             s.open().thenRun(() -> {
                 System.out.println("Starting...");
@@ -77,18 +88,32 @@ public class RemoteScheduler implements Scheduler {
         tc.serializer().register(ClientFailure.class);
     }
 
-    @Override
-    public void newTask() {
 
+    @Override
+    public void newTask(String url) {
+        cf = new CompletableFuture();
+
+        try {
+            cf.get();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @Override
-    public void getTask() {
+    public Task getTask() {
+        cf = new CompletableFuture();
 
+        try {
+            cf.get();
+        } catch (Exception e) { e.printStackTrace(); }
+        return null;
     }
 
     @Override
-    public void endTask() {
+    public void endTask(Task t) {
+        cf = new CompletableFuture();
 
+        try {
+            cf.get();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }
