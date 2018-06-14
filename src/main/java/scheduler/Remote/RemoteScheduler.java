@@ -101,6 +101,10 @@ public class RemoteScheduler implements Scheduler {
     }
 
     @Override
+    public Task getTask(String client_id) {
+        return null;
+    }
+
     public Task getTask() {
         try {
             cf = new CompletableFuture();
