@@ -14,6 +14,7 @@ import io.atomix.catalyst.transport.Transport;
 import io.atomix.catalyst.transport.netty.NettyTransport;
 import pt.haslab.ekit.Spread;
 import scheduler.Req.NewTaskReq;
+import spread.MembershipInfo;
 import spread.SpreadGroup;
 import spread.SpreadMessage;
 
@@ -24,15 +25,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RemoteScheduler implements Scheduler {
     private final ThreadContext tc;
     private final Spread s;
-    private AtomicInteger req_id = new AtomicInteger(0);
-    private CompletableFuture f;
+    private String server_group;
     private int id;
-    
+
     public RemoteScheduler(int id) throws Exception {
         this.id = id;
         tc = new SingleThreadContext("srv-%d", new Serializer());
-        s = new Spread("user-" + this.id, false);
-
+        s = new Spread("user-" + this.id, true);
+        
         registerMsg();
         registerHandlers();
     }
@@ -42,6 +42,12 @@ public class RemoteScheduler implements Scheduler {
             s.open().thenRun(() -> {
                 System.out.println("Starting...");
                 s.join("users" + this.id);
+            });
+            s.handler(MembershipInfo.class, (sender, msg) -> {
+                if(msg.isCausedByDisconnect() || msg.isCausedByLeave()){
+                    System.out.println("Client failure");
+                    sendMsg()
+                }
             });
             s.handler(GetTaskRep.class, (sender, msg) -> {
                 System.out.println("GetTask received");
