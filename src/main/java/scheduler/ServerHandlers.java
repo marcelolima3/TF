@@ -56,8 +56,8 @@ public class ServerHandlers {
             });
             s.handler(StateRep.class, (sender, msg) -> {
                 if(this.state_sender == null) {
-                    this.state_sender = sender.getSender();
                     System.out.println("StateRep received");
+                    this.state_sender = sender.getSender();
                     this.scheduler = getState(msg);
                     processBuffer();
                     registerMainHandlers();
@@ -101,6 +101,9 @@ public class ServerHandlers {
             s.handler(EndTaskReq.class, (sender, msg) -> {
                 System.out.println("EndTask received");
             });
+            s.handler(ClientFailure.class, (sender, msg) -> {
+                System.out.println("ClientFailure received");
+            });
             s.handler(StateReq.class, (sender, msg) -> {
                 System.out.println("StateReq received");
                 stateTransfer(sender.getSender());
@@ -133,7 +136,6 @@ public class ServerHandlers {
     }
 
     private void registerMoreMsg(){
-        tcspread.serializer().register(Address.class);
         tcspread.serializer().register(EndTaskReq.class);
         tcspread.serializer().register(EndTaskRep.class);
         tcspread.serializer().register(GetTaskRep.class);
@@ -144,5 +146,6 @@ public class ServerHandlers {
         tcspread.serializer().register(StateReq.class);
         tcspread.serializer().register(SchedulerImp.class);
         tcspread.serializer().register(Task.class);
+        tcspread.serializer().register(ClientFailure.class);
     }
 }

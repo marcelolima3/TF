@@ -1,5 +1,7 @@
 package scheduler.Remote;
 
+import io.atomix.catalyst.transport.Client;
+import scheduler.Req.ClientFailure;
 import scheduler.Interfaces.Scheduler;
 import scheduler.Rep.EndTaskRep;
 import scheduler.Rep.GetTaskRep;
@@ -9,44 +11,37 @@ import scheduler.Req.GetTaskReq;
 import io.atomix.catalyst.concurrent.SingleThreadContext;
 import io.atomix.catalyst.concurrent.ThreadContext;
 import io.atomix.catalyst.serializer.Serializer;
-import io.atomix.catalyst.transport.Address;
-import io.atomix.catalyst.transport.Transport;
-import io.atomix.catalyst.transport.netty.NettyTransport;
 import pt.haslab.ekit.Spread;
 import scheduler.Req.NewTaskReq;
 import spread.MembershipInfo;
 import spread.SpreadGroup;
 import spread.SpreadMessage;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
-
 
 public class RemoteScheduler implements Scheduler {
     private final ThreadContext tc;
     private final Spread s;
-    private String server_group;
+    private final String client_group;
+    private final String server_group;
     private int id;
 
     public RemoteScheduler(int id) throws Exception {
         this.id = id;
         tc = new SingleThreadContext("srv-%d", new Serializer());
         s = new Spread("user-" + this.id, true);
-        
+        this.server_group = "servers";
+        this.client_group = "users";
+
         registerMsg();
         registerHandlers();
     }
 
     private void registerHandlers() {
         tc.execute(() -> {
-            s.open().thenRun(() -> {
-                System.out.println("Starting...");
-                s.join("users" + this.id);
-            });
             s.handler(MembershipInfo.class, (sender, msg) -> {
                 if(msg.isCausedByDisconnect() || msg.isCausedByLeave()){
-                    System.out.println("Client failure");
-                    sendMsg()
+                    System.out.println("Client failure - " + msg.getLeft().toString());
+                    sendMsg(server_group, new ClientFailure(msg.getLeft().toString()));
                 }
             });
             s.handler(GetTaskRep.class, (sender, msg) -> {
@@ -58,10 +53,14 @@ public class RemoteScheduler implements Scheduler {
             s.handler(EndTaskRep.class, (sender, msg) -> {
                 System.out.println("EndTask received");
             });
+            s.open().thenRun(() -> {
+                System.out.println("Starting...");
+                s.join(this.client_group);
+            });
         });
     }
 
-    public void sendMsg(SpreadGroup group, Object msg){
+    public void sendMsg(String group, Object msg){
         SpreadMessage sm = new SpreadMessage();
         sm.addGroup(group);
         sm.setAgreed();
@@ -75,6 +74,7 @@ public class RemoteScheduler implements Scheduler {
         tc.serializer().register(NewTaskReq.class);
         tc.serializer().register(EndTaskRep.class);
         tc.serializer().register(EndTaskReq.class);
+        tc.serializer().register(ClientFailure.class);
     }
 
     @Override
