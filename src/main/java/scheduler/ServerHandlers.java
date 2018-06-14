@@ -56,8 +56,8 @@ public class ServerHandlers {
             });
             s.handler(StateRep.class, (sender, msg) -> {
                 if(this.state_sender == null) {
-                    this.state_sender = sender.getSender();
                     System.out.println("StateRep received");
+                    this.state_sender = sender.getSender();
                     this.scheduler = getState(msg);
                     processBuffer();
                     registerMainHandlers();
@@ -93,16 +93,16 @@ public class ServerHandlers {
     private void registerMainHandlers(){
         tcspread.execute(() -> {
             s.handler(NewTaskReq.class, (sender, msg) -> {
-                System.out.println("NewTask received");
+                System.out.println("NewTask received-Main");
             });
             s.handler(GetTaskReq.class, (sender, msg) -> {
-                System.out.println("GetTask received");
+                System.out.println("GetTask received-Main");
             });
             s.handler(EndTaskReq.class, (sender, msg) -> {
-                System.out.println("EndTask received");
+                System.out.println("EndTask received-Main");
             });
             s.handler(StateReq.class, (sender, msg) -> {
-                System.out.println("StateReq received");
+                System.out.println("StateReq received-Main");
                 stateTransfer(sender.getSender());
             });
         });
