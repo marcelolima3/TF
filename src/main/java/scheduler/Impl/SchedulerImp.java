@@ -87,6 +87,7 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
 
         SchedulerImp scheduler = new SchedulerImp();
 
+        // Adding tasks
         for(int i = 0; i < 5; i++)
             scheduler.newTask("id"+i);
 
@@ -96,6 +97,7 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         System.out.println("Processing tasks");
         scheduler.getProcessingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
 
+        // Processing tasks
         for(int i = 0; i < 3; i++)
             scheduler.getTask();
 
@@ -105,6 +107,7 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         System.out.println("Processing tasks");
         scheduler.getProcessingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
 
+        // Ending tasks
         for(int i = 0; i < 2; i++)
             scheduler.endTask();
 
@@ -114,7 +117,7 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         System.out.println("Processing tasks");
         scheduler.getProcessingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
 
-
+        // Testing task shift whenever a client fails
         Task task_0 = scheduler.getProcessingTasks().get(0);
         scheduler.shiftTask(task_0);
 
