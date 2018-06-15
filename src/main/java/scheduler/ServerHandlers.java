@@ -1,5 +1,6 @@
 package scheduler;
 
+import exceptions.RepeatedTaskException;
 import scheduler.Impl.RequestInfo;
 import scheduler.Impl.SchedulerImp;
 import scheduler.Impl.Task;
@@ -15,6 +16,7 @@ import spread.SpreadMessage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class ServerHandlers {
     public int id;
@@ -85,22 +87,38 @@ public class ServerHandlers {
                 System.out.println("NewTask received-Buffer");
 
                 NewTaskReq ntr = (NewTaskReq) ri.getMsg();
-                boolean res = scheduler.newTask(ntr.url);
-                sendMsg(ri.getSender(), new NewTaskRep(ntr.id, res));
+                try {
+                    scheduler.newTask(ntr.url);
+                    sendMsg(ri.getSender(), new NewTaskRep(ntr.id, true));
+                } catch (RepeatedTaskException e) {
+                    sendMsg(ri.getSender(), new NewTaskRep(ntr.id, false));
+                }
             }
             else if(ri.getMsg() instanceof GetTaskReq){
                 System.out.println("GetTask received-Buffer");
 
                 GetTaskReq gtr = (GetTaskReq) ri.getMsg();
-                Task t = scheduler.getTask(ri.getSender().toString());
-                sendMsg(ri.getSender(), new GetTaskRep(gtr.id, t));
+                try {
+                    Task task = scheduler.getTask();
+                    ((SchedulerImp) scheduler).processTask(ri.getSender().toString(), task);
+                    sendMsg(ri.getSender(), new GetTaskRep(gtr.id, task, true));
+                }
+                catch(NoSuchElementException e){
+                    sendMsg(ri.getSender(), new GetTaskRep(gtr.id, null, false));
+                }
             }
             else if(ri.getMsg() instanceof EndTaskReq){
                 System.out.println("EndTask received-Buffer");
 
                 EndTaskReq etr = (EndTaskReq) ri.getMsg();
-                boolean res = scheduler.endTask(etr.t);
-                sendMsg(ri.getSender(), new EndTaskRep(etr.id, res));
+                try {
+                    scheduler.endTask(etr.t);
+                    sendMsg(ri.getSender(), new EndTaskRep(etr.id, true));
+                }
+                catch (NoSuchElementException e){
+                    sendMsg(ri.getSender(), new EndTaskRep(etr.id, false));
+                }
+
             }
         }
     }
@@ -110,20 +128,36 @@ public class ServerHandlers {
             s.handler(NewTaskReq.class, (sender, msg) -> {
                 System.out.println("NewTask received-Main");
 
-                boolean res = scheduler.newTask(msg.url);
-                sendMsg(sender.getSender(), new NewTaskRep(msg.id, res));
+                try {
+                    scheduler.newTask(msg.url);
+                    sendMsg(sender.getSender(), new NewTaskRep(msg.id, true));
+                } catch (RepeatedTaskException e) {
+                    sendMsg(sender.getSender(), new NewTaskRep(msg.id, false));
+                }
+
             });
             s.handler(GetTaskReq.class, (sender, msg) -> {
                 System.out.println("GetTask received-Main");
 
-                Task t = scheduler.getTask(sender.getSender().toString());
-                sendMsg(sender.getSender(), new GetTaskRep(msg.id, t));
+                try {
+                    Task task = scheduler.getTask();
+                    ((SchedulerImp) scheduler).processTask(sender.getSender().toString(), task);
+                    sendMsg(sender.getSender(), new GetTaskRep(msg.id, task, true));
+                }
+                catch (NoSuchElementException e) {
+                    sendMsg(sender.getSender(), new GetTaskRep(msg.id, null, false));
+                }
             });
             s.handler(EndTaskReq.class, (sender, msg) -> {
                 System.out.println("EndTask received-Main");
 
-                boolean res = scheduler.endTask(msg.t);
-                sendMsg(sender.getSender(), new EndTaskRep(msg.id, res));
+                try {
+                    scheduler.endTask(msg.t);
+                    sendMsg(sender.getSender(), new EndTaskRep(msg.id, true));
+                }
+                catch (NoSuchElementException e){
+                    sendMsg(sender.getSender(), new EndTaskRep(msg.id, false));
+                }
             });
             s.handler(ClientFailure.class, (sender, msg) -> {
                 System.out.println("ClientFailure received");

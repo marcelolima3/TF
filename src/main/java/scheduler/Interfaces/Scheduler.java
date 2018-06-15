@@ -5,13 +5,15 @@
  */
 package scheduler.Interfaces;
 
+import exceptions.RepeatedTaskException;
 import scheduler.Impl.Task;
+
 
 public interface Scheduler {
     // Create a new task
-    boolean newTask(String url);
+    void newTask(String url) throws RepeatedTaskException;
     // Get next task to be processed
-    Task getTask(String client_id);
+    Task getTask();
     // End a task
-    boolean endTask(Task t);
+    void endTask(Task t);
 }

@@ -1,5 +1,6 @@
 package scheduler.Remote;
 
+import exceptions.RepeatedTaskException;
 import scheduler.Req.ClientFailure;
 import scheduler.Impl.Task;
 import scheduler.Interfaces.Scheduler;
@@ -16,6 +17,7 @@ import scheduler.Req.NewTaskReq;
 import spread.MembershipInfo;
 import spread.SpreadMessage;
 
+import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -90,41 +92,42 @@ public class RemoteScheduler implements Scheduler {
 
 
     @Override
-    public boolean newTask(String url) {
+    public void newTask(String url) {
         try {
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
             sendMsg(this.server_group, new NewTaskReq(id_req, url));
 
             NewTaskRep ntr = (NewTaskRep) cf.get();
-            return ntr.res;
+            if(!ntr.res)
+                throw new RepeatedTaskException("Repeated task" + url);
         } catch (Exception e) { e.printStackTrace(); }
-        return false;
     }
 
     @Override
-    public Task getTask(String client_id) {
+    public Task getTask() throws NoSuchElementException{
         try {
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
             sendMsg(this.server_group, new GetTaskReq(id_req));
-
             GetTaskRep gtr = (GetTaskRep) cf.get();
-            return gtr.res;
+            if(gtr.status)
+                return gtr.res;
+            else throw new NoSuchElementException();
         } catch (Exception e) { e.printStackTrace(); }
         return null;
     }
 
     @Override
-    public boolean endTask(Task t) {
+    public void endTask(Task t) {
         try {
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
             sendMsg(this.server_group, new EndTaskReq(id_req, t));
 
             EndTaskRep etr = (EndTaskRep) cf.get();
-            return etr.res;
+            if(!etr.res)
+                throw new NoSuchElementException();
         } catch (Exception e) { e.printStackTrace(); }
-        return false;
     }
 }

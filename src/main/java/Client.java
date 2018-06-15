@@ -10,7 +10,7 @@ public class Client {
         int id = Integer.parseInt(args[0]);
         Scheduler scheduler = new RemoteScheduler(id);
         scheduler.newTask("task_0");
-        Task task = scheduler.getTask(String.valueOf(id));
+        Task task = scheduler.getTask();
         task.run();
         scheduler.endTask(task);
     }

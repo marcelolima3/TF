@@ -1,5 +1,6 @@
 package scheduler.Impl;
 
+import exceptions.RepeatedTaskException;
 import io.atomix.catalyst.buffer.BufferInput;
 import io.atomix.catalyst.buffer.BufferOutput;
 import io.atomix.catalyst.serializer.CatalystSerializable;
@@ -21,41 +22,29 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
 
     // Add a new task to process
     @Override
-    public synchronized boolean newTask(String url) {
-        try {
-            if (!waitingTasksContains(url) && !processingTasksContains(url)) {
-                Task task = new Task(url);
-                this.waiting_tasks.add(task);
-                return true;
-            }
+    public synchronized void newTask(String url) throws RepeatedTaskException {
+        if (!waitingTasksContains(url) && !processingTasksContains(url)) {
+            Task task = new Task(url);
+            this.waiting_tasks.add(task);
         }
-        catch (Exception e){ e.printStackTrace(); }
-        return false;
+        else throw new RepeatedTaskException("Repeated url: " + url);
     }
 
     // Get next task to be processed
     @Override
-    public synchronized Task getTask(String client_id) {
-        try{
-            Task next_task = this.waiting_tasks.removeFirst();
-            this.processing_tasks.put(next_task, client_id);
-            return next_task;
-        }
-        catch(NoSuchElementException exception){ exception.getStackTrace(); }
+    public synchronized Task getTask() throws NoSuchElementException {
+        Task next_task = this.waiting_tasks.removeFirst();
+        return next_task;
+    }
 
-        return null;
+    public synchronized void processTask(String client, Task task){
+        this.processing_tasks.put(task, client);
     }
 
     // End next task on processing_tasks
     @Override
-    public synchronized boolean endTask(Task t) {
-        try{
-            processing_tasks.remove(t);
-            return true;
-        }
-        catch(NoSuchElementException exception){ exception.getStackTrace(); }
-
-        return false;
+    public synchronized void endTask(Task t) throws NoSuchElementException {
+        processing_tasks.remove(t);
     }
 
     // Shift client tasks from processing to waiting
@@ -134,7 +123,7 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
     }
 
 
-    public static void main(String[] args){
+    /**public static void main(String[] args){
 
         SchedulerImp scheduler = new SchedulerImp();
         Task task1 = null;
@@ -179,6 +168,6 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
         System.out.println("Processing tasks");
         scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
-    }
+    }**/
 
 }
