@@ -64,6 +64,7 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
             if(entry.getValue().equals(client)){
                 it.remove();
                 waiting_tasks.addFirst(entry.getKey());
+                break;
             }
         }
     }
@@ -164,6 +165,5 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
         System.out.println("Processing tasks");
         scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
-
     }
 }
