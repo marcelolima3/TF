@@ -5,19 +5,19 @@ import spread.SpreadGroup;
 import spread.SpreadMessage;
 
 public class RequestInfo {
-    private SpreadMessage sender;
+    private SpreadGroup sender;
     private Object msg;
 
-    public RequestInfo(SpreadMessage sender, Object msg) {
+    public RequestInfo(SpreadGroup sender, Object msg) {
         this.sender = sender;
         this.msg = msg;
     }
 
-    public SpreadMessage getSender() {
+    public SpreadGroup getSender() {
         return sender;
     }
 
-    public void setSender(SpreadMessage sender) {
+    public void setSender(SpreadGroup sender) {
         this.sender = sender;
     }
 

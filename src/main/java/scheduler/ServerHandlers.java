@@ -64,11 +64,11 @@ public class ServerHandlers {
                 }
             });
             s.handler(NewTaskReq.class, (sender, msg) ->
-                    buffer.add(new RequestInfo(sender, msg)));
+                    buffer.add(new RequestInfo(sender.getSender(), msg)));
             s.handler(GetTaskReq.class, (sender, msg) ->
-                    buffer.add(new RequestInfo(sender, msg)));
+                    buffer.add(new RequestInfo(sender.getSender(), msg)));
             s.handler(EndTaskReq.class, (sender, msg) ->
-                    buffer.add(new RequestInfo(sender, msg)));
+                    buffer.add(new RequestInfo(sender.getSender(), msg)));
             s.open().thenRun(() -> {
                 System.out.println("Starting...");
                 s.join(this.group);
@@ -79,13 +79,25 @@ public class ServerHandlers {
     private void processBuffer() {
         for(RequestInfo ri: buffer){
             if(ri.getMsg() instanceof NewTaskReq){
-                System.out.println("NewTask received");
+                System.out.println("NewTask received-Buffer");
+
+                NewTaskReq ntr = (NewTaskReq) ri.getMsg();
+                boolean res = scheduler.newTask(ntr.url);
+                sendMsg(ri.getSender(), new NewTaskRep(ntr.id, res));
             }
             else if(ri.getMsg() instanceof GetTaskReq){
-                System.out.println("GetTask received");
+                System.out.println("GetTask received-Buffer");
+
+                GetTaskReq gtr = (GetTaskReq) ri.getMsg();
+                Task t = scheduler.getTask(ri.getSender().toString());
+                sendMsg(ri.getSender(), new GetTaskRep(gtr.id, t));
             }
             else if(ri.getMsg() instanceof EndTaskReq){
-                System.out.println("EndTask received");
+                System.out.println("EndTask received-Buffer");
+
+                EndTaskReq etr = (EndTaskReq) ri.getMsg();
+                boolean res = scheduler.endTask(etr.t);
+                sendMsg(ri.getSender(), new EndTaskRep(etr.id, res));
             }
         }
     }

@@ -96,7 +96,8 @@ public class RemoteScheduler implements Scheduler {
             int id_req = req_id.incrementAndGet();
             sendMsg(this.server_group, new NewTaskReq(id_req, url));
 
-            return (boolean) cf.get();
+            NewTaskRep ntr = (NewTaskRep) cf.get();
+            return ntr.res;
         } catch (Exception e) { e.printStackTrace(); }
         return false;
     }
@@ -104,12 +105,11 @@ public class RemoteScheduler implements Scheduler {
     @Override
     public Task getTask(String client_id) {
         try {
-            GetTaskRep gtr;
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
             sendMsg(this.server_group, new GetTaskReq(id_req));
 
-            gtr = (GetTaskRep) cf.get();
+            GetTaskRep gtr = (GetTaskRep) cf.get();
             return gtr.res;
         } catch (Exception e) { e.printStackTrace(); }
         return null;
@@ -118,12 +118,11 @@ public class RemoteScheduler implements Scheduler {
     @Override
     public boolean endTask(Task t) {
         try {
-            EndTaskRep etr;
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
             sendMsg(this.server_group, new EndTaskReq(id_req, t));
 
-            etr = (EndTaskRep) cf.get();
+            EndTaskRep etr = (EndTaskRep) cf.get();
             return etr.res;
         } catch (Exception e) { e.printStackTrace(); }
         return false;
