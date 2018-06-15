@@ -120,7 +120,7 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         this.processing_tasks = processing_tasks;
     }
 
-
+    /*
     public static void main(String[] args){
 
         SchedulerImp scheduler = new SchedulerImp();
@@ -166,4 +166,5 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         System.out.println("Processing tasks");
         scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
     }
+    */
 }

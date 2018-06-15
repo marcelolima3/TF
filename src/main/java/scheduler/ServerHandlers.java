@@ -7,7 +7,6 @@ import scheduler.Interfaces.Scheduler;
 import scheduler.Rep.*;
 import scheduler.Req.*;
 import io.atomix.catalyst.concurrent.SingleThreadContext;
-import io.atomix.catalyst.transport.Address;
 import io.atomix.catalyst.transport.Transport;
 import pt.haslab.ekit.Spread;
 import spread.MembershipInfo;
@@ -16,7 +15,6 @@ import spread.SpreadMessage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 
 public class ServerHandlers {
     public int id;
@@ -55,7 +53,7 @@ public class ServerHandlers {
                 }
                 else if(msg.isCausedByJoin() && s.getPrivateGroup().equals(msg.getJoined())) {
                     System.out.println("-- Other server");
-                    sendMsg(this.group, new  StateReq());
+                    sendMsg(this.group, new StateReq());
                 }
             });
             s.handler(StateRep.class, (sender, msg) -> {
