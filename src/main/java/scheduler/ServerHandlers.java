@@ -47,8 +47,9 @@ public class ServerHandlers {
     private void registerSpreadHandlers(){
         tcspread.execute(() -> {
             s.handler(MembershipInfo.class, (sender, msg) ->  {
-                if(msg.getMembers().length == 1) {
+                if(msg.getMembers().length == 1 && this.state_sender == null) {
                     System.out.println("-- I'm the first server");
+                    this.state_sender = msg.getJoined();
                     registerMainHandlers();
                 }
                 else if(msg.isCausedByJoin() && s.getPrivateGroup().equals(msg.getJoined())) {
