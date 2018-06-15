@@ -49,10 +49,14 @@ public class ServerHandlers {
     private void registerSpreadHandlers(){
         tcspread.execute(() -> {
             s.handler(MembershipInfo.class, (sender, msg) ->  {
-                if(msg.getMembers().length == 1)
+                if(msg.getMembers().length == 1) {
+                    System.out.println("-- I'm the first server");
                     registerMainHandlers();
-                else if(msg.isCausedByJoin() && s.getPrivateGroup().equals(msg.getJoined()))
-                    sendMsg(this.group, new StateReq());
+                }
+                else if(msg.isCausedByJoin() && s.getPrivateGroup().equals(msg.getJoined())) {
+                    System.out.println("-- Other server");
+                    sendMsg(this.group, new  StateReq());
+                }
             });
             s.handler(StateRep.class, (sender, msg) -> {
                 if(this.state_sender == null) {
