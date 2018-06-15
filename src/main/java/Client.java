@@ -1,4 +1,5 @@
 import pt.haslab.ekit.Spread;
+import scheduler.Impl.Task;
 import scheduler.Interfaces.Scheduler;
 import scheduler.Remote.RemoteScheduler;
 
@@ -8,9 +9,9 @@ public class Client {
     public static void main(String args[]) throws Exception {
         int id = Integer.parseInt(args[0]);
         Scheduler scheduler = new RemoteScheduler(id);
-
-        // do something
-
-
+        scheduler.newTask("task_0");
+        Task task = scheduler.getTask(String.valueOf(id));
+        task.run();
+        scheduler.endTask(task);
     }
 }

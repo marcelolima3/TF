@@ -23,12 +23,13 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
     @Override
     public synchronized boolean newTask(String url) {
         try {
-            Task task = new Task(url);
-            this.waiting_tasks.add(task);
-            return true;
+            if (!waitingTasksContains(url) && !processingTasksContains(url)) {
+                Task task = new Task(url);
+                this.waiting_tasks.add(task);
+                return true;
+            }
         }
         catch (Exception e){ e.printStackTrace(); }
-
         return false;
     }
 
@@ -120,13 +121,26 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         this.processing_tasks = processing_tasks;
     }
 
-    /*
+    public boolean waitingTasksContains(String url){
+        for(Task task: this.waiting_tasks)
+            if(task.getUrl().equals(url)) return true;
+        return false;
+    }
+
+    public boolean processingTasksContains(String url){
+        for(Map.Entry<Task, String> entry: this.processing_tasks.entrySet())
+            if(entry.getKey().getUrl().equals(url)) return true;
+        return false;
+    }
+
+
     public static void main(String[] args){
 
         SchedulerImp scheduler = new SchedulerImp();
         Task task1 = null;
 
         // Adding tasks
+        scheduler.newTask("id0");
         for(int i = 0; i < 5; i++)
             scheduler.newTask("id"+i);
 
@@ -166,5 +180,5 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         System.out.println("Processing tasks");
         scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
     }
-    */
+
 }
