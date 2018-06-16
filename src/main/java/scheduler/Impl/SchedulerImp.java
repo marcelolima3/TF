@@ -7,6 +7,7 @@ import io.atomix.catalyst.serializer.CatalystSerializable;
 import io.atomix.catalyst.serializer.Serializer;
 import scheduler.Interfaces.Scheduler;
 
+import java.sql.SQLOutput;
 import java.util.*;
 
 public class SchedulerImp implements Scheduler, CatalystSerializable {
@@ -15,7 +16,6 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
     private Map<Task, String> processing_tasks;
 
     public SchedulerImp() {
-        // we should prob use Collections.synchronizedList(new LinkedList(...));
         this.waiting_tasks = new LinkedList<>();
         this.processing_tasks = new HashMap<>();
     }
@@ -44,25 +44,18 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
     // End next task on processing_tasks
     @Override
     public synchronized void endTask(Task t) throws NoSuchElementException {
-        processing_tasks.remove(t);
+        String res = processing_tasks.remove(t);
     }
 
     // Shift client tasks from processing to waiting
     public synchronized void shiftTasksFromClient(String client){
-        for(Iterator<Map.Entry<Task, String>> it = processing_tasks.entrySet().iterator(); it.hasNext(); ){
-            Map.Entry<Task, String> entry = it.next();
+        for(Map.Entry<Task, String> entry : processing_tasks.entrySet()){
             if(entry.getValue().equals(client)){
-                it.remove();
                 waiting_tasks.addFirst(entry.getKey());
+                processing_tasks.remove(entry.getKey());
                 break;
             }
         }
-    }
-
-    // Shift task from processing to waiting (if client fails)
-    public synchronized void shiftTask(Task task){
-        this.processing_tasks.remove(task);
-        this.waiting_tasks.addFirst(task);
     }
 
     @Override
@@ -104,5 +97,13 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         for(Map.Entry<Task, String> entry: this.processing_tasks.entrySet())
             if(entry.getKey().getUrl().equals(url)) return true;
         return false;
+    }
+
+    public void printQueue(){
+        System.out.println("-------------------------");
+        for(Task t : waiting_tasks){
+            System.out.println("Task: " + t.getUrl());
+        }
+        System.out.println("-------------------------");
     }
 }

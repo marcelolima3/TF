@@ -57,19 +57,22 @@ public class RemoteScheduler implements Scheduler {
                 }
             });
             s.handler(GetTaskRep.class, (sender, msg) -> {
-                System.out.println("GetTask received");
-                if(msg.id == req_id.intValue() && cf!=null)
+                if(msg.id == req_id.intValue() && cf!=null){
+                    System.out.println("GetTask received");
                     cf.complete(msg);
+                }
             });
             s.handler(NewTaskRep.class, (sender, msg) -> {
-                System.out.println("NewTask received");
-                if(msg.id == req_id.intValue() && cf!=null)
+                if(msg.id == req_id.intValue() && cf!=null){
+                    System.out.println("NewTask received");
                     cf.complete(msg);
+                }
             });
             s.handler(EndTaskRep.class, (sender, msg) -> {
-                System.out.println("EndTask received");
-                if(msg.id == req_id.intValue() && cf!=null)
+                if(msg.id == req_id.intValue() && cf!=null) {
+                    System.out.println("EndTask received");
                     cf.complete(msg);
+                }
             });
             try {
                 s.open().thenRun(() -> {

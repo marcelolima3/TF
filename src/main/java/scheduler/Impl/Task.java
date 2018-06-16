@@ -5,6 +5,8 @@ import io.atomix.catalyst.buffer.BufferOutput;
 import io.atomix.catalyst.serializer.CatalystSerializable;
 import io.atomix.catalyst.serializer.Serializer;
 
+import java.util.Objects;
+
 public class Task implements CatalystSerializable {
     private String url;
 
@@ -24,6 +26,19 @@ public class Task implements CatalystSerializable {
 
     public void run() throws InterruptedException {
         Thread.sleep((long)(Math.random() * 5000));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return Objects.equals(url, task.url);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(url);
     }
 
     @Override

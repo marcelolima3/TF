@@ -163,7 +163,7 @@ public class ServerHandlers {
             s.handler(ClientFailure.class, (sender, msg) -> {
                 System.out.println("ClientFailure received");
 
-                ((SchedulerImp) scheduler).shiftTasksFromClient(sender.getSender().toString());
+                ((SchedulerImp) scheduler).shiftTasksFromClient(msg.client);
             });
             s.handler(StateReq.class, (sender, msg) -> {
                 System.out.println("StateReq received-Main");
