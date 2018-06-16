@@ -19,6 +19,7 @@ import spread.SpreadMessage;
 
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -43,16 +44,16 @@ public class RemoteScheduler implements Scheduler {
         registerHandlers();
     }
 
-    private void registerHandlers() {
+    private void registerHandlers() throws ExecutionException, InterruptedException {
         tc.execute(() -> {
             s.handler(MembershipInfo.class, (sender, msg) -> {
                 if(msg.isCausedByDisconnect()){
                     System.out.println("Client failure - " + msg.getDisconnected().toString());
-                    sendMsg(server_group, new ClientFailure(msg.getDisconnected().toString()));
+                    broadcast(server_group, new ClientFailure(msg.getDisconnected().toString()));
                 }
                 else if(msg.isCausedByLeave()){
                     System.out.println("Client failure - " + msg.getLeft().toString());
-                    sendMsg(server_group, new ClientFailure(msg.getLeft().toString()));
+                    broadcast(server_group, new ClientFailure(msg.getLeft().toString()));
                 }
             });
             s.handler(GetTaskRep.class, (sender, msg) -> {
@@ -70,14 +71,17 @@ public class RemoteScheduler implements Scheduler {
                 if(msg.id == req_id.intValue() && cf!=null)
                     cf.complete(msg);
             });
-            s.open().thenRun(() -> {
-                System.out.println("Starting...");
-                s.join(this.client_group);
-            });
-        });
+            try {
+                s.open().thenRun(() -> {
+                    System.out.println("Starting...");
+                    s.join(this.client_group);
+                }).get();
+            }
+            catch (Exception e) { e.printStackTrace(); }
+        }).get();
     }
 
-    public void sendMsg(String group, Object msg){
+    public void broadcast(String group, Object msg){
         SpreadMessage sm = new SpreadMessage();
         sm.addGroup(group);
         sm.setAgreed();
@@ -91,6 +95,7 @@ public class RemoteScheduler implements Scheduler {
         tc.serializer().register(NewTaskReq.class);
         tc.serializer().register(EndTaskRep.class);
         tc.serializer().register(EndTaskReq.class);
+        tc.serializer().register(Task.class);
         tc.serializer().register(ClientFailure.class);
     }
 
@@ -100,7 +105,7 @@ public class RemoteScheduler implements Scheduler {
         try {
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
-            sendMsg(this.server_group, new NewTaskReq(id_req, url));
+            broadcast(this.server_group, new NewTaskReq(id_req, url));
             NewTaskRep ntr = (NewTaskRep) cf.get();
 
             if(!ntr.res)
@@ -114,7 +119,7 @@ public class RemoteScheduler implements Scheduler {
         try {
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
-            sendMsg(this.server_group, new GetTaskReq(id_req));
+            broadcast(this.server_group, new GetTaskReq(id_req));
             GetTaskRep gtr = (GetTaskRep) cf.get();
 
             if(gtr.status)
@@ -131,7 +136,7 @@ public class RemoteScheduler implements Scheduler {
         try {
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
-            sendMsg(this.server_group, new EndTaskReq(id_req, t));
+            broadcast(this.server_group, new EndTaskReq(id_req, t));
             EndTaskRep etr = (EndTaskRep) cf.get();
 
             if(!etr.res)

@@ -23,7 +23,7 @@ public class Task implements CatalystSerializable {
     }
 
     public void run() throws InterruptedException {
-        Thread.sleep((long)(Math.random() * 1000));
+        Thread.sleep((long)(Math.random() * 5000));
     }
 
     @Override

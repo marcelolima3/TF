@@ -56,7 +56,7 @@ public class ServerHandlers {
                 }
                 else if(msg.isCausedByJoin() && s.getPrivateGroup().equals(msg.getJoined())) {
                     System.out.println("-- Other server");
-                    sendMsg(this.group, new StateReq());
+                    broadcast(this.group, new StateReq());
                 }
             });
             s.handler(StateRep.class, (sender, msg) -> {
@@ -89,9 +89,9 @@ public class ServerHandlers {
                 NewTaskReq ntr = (NewTaskReq) ri.getMsg();
                 try {
                     scheduler.newTask(ntr.url);
-                    sendMsg(ri.getSender(), new NewTaskRep(ntr.id, true));
+                    directMsg(ri.getSender(), new NewTaskRep(ntr.id, true));
                 } catch (RepeatedTaskException e) {
-                    sendMsg(ri.getSender(), new NewTaskRep(ntr.id, false));
+                    directMsg(ri.getSender(), new NewTaskRep(ntr.id, false));
                 }
             }
             else if(ri.getMsg() instanceof GetTaskReq){
@@ -102,10 +102,10 @@ public class ServerHandlers {
                 try {
                     Task task = scheduler.getTask();
                     ((SchedulerImp) scheduler).processTask(sp.toString(), task);
-                    sendMsg(sp, new GetTaskRep(gtr.id, task, true));
+                    directMsg(sp, new GetTaskRep(gtr.id, task, true));
                 }
                 catch(NoSuchElementException e){
-                    sendMsg(sp, new GetTaskRep(gtr.id, null, false));
+                    directMsg(sp, new GetTaskRep(gtr.id, null, false));
                 }
             }
             else if(ri.getMsg() instanceof EndTaskReq){
@@ -114,10 +114,10 @@ public class ServerHandlers {
                 EndTaskReq etr = (EndTaskReq) ri.getMsg();
                 try {
                     scheduler.endTask(etr.t);
-                    sendMsg(ri.getSender(), new EndTaskRep(etr.id, true));
+                    directMsg(ri.getSender(), new EndTaskRep(etr.id, true));
                 }
                 catch (NoSuchElementException e){
-                    sendMsg(ri.getSender(), new EndTaskRep(etr.id, false));
+                    directMsg(ri.getSender(), new EndTaskRep(etr.id, false));
                 }
 
             }
@@ -131,10 +131,10 @@ public class ServerHandlers {
 
                 try {
                     scheduler.newTask(msg.url);
-                    sendMsg(sender.getSender(), new NewTaskRep(msg.id, true));
+                    directMsg(sender.getSender(), new NewTaskRep(msg.id, true));
                 }
                 catch (RepeatedTaskException e) {
-                    sendMsg(sender.getSender(), new NewTaskRep(msg.id, false));
+                    directMsg(sender.getSender(), new NewTaskRep(msg.id, false));
                 }
             });
             s.handler(GetTaskReq.class, (sender, msg) -> {
@@ -143,10 +143,10 @@ public class ServerHandlers {
                 try {
                     Task task = scheduler.getTask();
                     ((SchedulerImp) scheduler).processTask(sender.getSender().toString(), task);
-                    sendMsg(sender.getSender(), new GetTaskRep(msg.id, task, true));
+                    directMsg(sender.getSender(), new GetTaskRep(msg.id, task, true));
                 }
                 catch (NoSuchElementException e) {
-                    sendMsg(sender.getSender(), new GetTaskRep(msg.id, null, false));
+                    directMsg(sender.getSender(), new GetTaskRep(msg.id, null, false));
                 }
             });
             s.handler(EndTaskReq.class, (sender, msg) -> {
@@ -154,10 +154,10 @@ public class ServerHandlers {
 
                 try {
                     scheduler.endTask(msg.t);
-                    sendMsg(sender.getSender(), new EndTaskRep(msg.id, true));
+                    directMsg(sender.getSender(), new EndTaskRep(msg.id, true));
                 }
                 catch (NoSuchElementException e){
-                    sendMsg(sender.getSender(), new EndTaskRep(msg.id, false));
+                    directMsg(sender.getSender(), new EndTaskRep(msg.id, false));
                 }
             });
             s.handler(ClientFailure.class, (sender, msg) -> {
@@ -180,17 +180,17 @@ public class ServerHandlers {
 
     private void stateTransfer(SpreadGroup joined){
         // TODO implement state transfer for big data
-        sendMsg(joined, new StateRep(scheduler));
+        directMsg(joined, new StateRep(scheduler));
     }
 
-    public void sendMsg(SpreadGroup group, Object msg){
+    public void directMsg(SpreadGroup group, Object msg){
         SpreadMessage sm = new SpreadMessage();
         sm.addGroup(group);
-        sm.setAgreed();
+        sm.setReliable();
         this.s.multicast(sm, msg);
     }
 
-    public void sendMsg(String group, Object msg){
+    public void broadcast(String group, Object msg){
         SpreadMessage sm = new SpreadMessage();
         sm.addGroup(group);
         sm.setAgreed();
