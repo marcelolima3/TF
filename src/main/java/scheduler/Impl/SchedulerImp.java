@@ -12,12 +12,12 @@ import java.util.*;
 public class SchedulerImp implements Scheduler, CatalystSerializable {
 
     private LinkedList<Task> waiting_tasks;
-    private Map<Task,String> processing_tasks;
+    private Map<Task, String> processing_tasks;
 
     public SchedulerImp() {
         // we should prob use Collections.synchronizedList(new LinkedList(...));
-        this.waiting_tasks = new LinkedList<Task>();
-        this.processing_tasks = new HashMap<Task,String>();
+        this.waiting_tasks = new LinkedList<>();
+        this.processing_tasks = new HashMap<>();
     }
 
     // Add a new task to process
@@ -94,22 +94,6 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
         }
     }
 
-    public List<Task> getWaitingTasks() {
-        return waiting_tasks;
-    }
-
-    public void setWaitingTasks(LinkedList<Task> waiting_tasks) {
-        this.waiting_tasks = waiting_tasks;
-    }
-
-    public Map<Task, String> getProcessingTasks() {
-        return processing_tasks;
-    }
-
-    public void setProcessingTasks(Map<Task, String> processing_tasks) {
-        this.processing_tasks = processing_tasks;
-    }
-
     public boolean waitingTasksContains(String url){
         for(Task task: this.waiting_tasks)
             if(task.getUrl().equals(url)) return true;
@@ -121,53 +105,4 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
             if(entry.getKey().getUrl().equals(url)) return true;
         return false;
     }
-
-
-    /**public static void main(String[] args){
-
-        SchedulerImp scheduler = new SchedulerImp();
-        Task task1 = null;
-
-        // Adding tasks
-        scheduler.newTask("id0");
-        for(int i = 0; i < 5; i++)
-            scheduler.newTask("id"+i);
-
-        System.out.println();
-        System.out.println("Waiting tasks");
-        scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
-        System.out.println("Processing tasks");
-        scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
-
-        // Processing tasks
-        for(int i = 0; i < 3; i++)
-            task1 = scheduler.getTask("client_1");
-
-        System.out.println();
-        System.out.println("Waiting tasks");
-        scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
-        System.out.println("Processing tasks");
-        scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
-
-        // Ending tasks
-        scheduler.endTask(task1);
-
-        System.out.println("");
-        System.out.println("Waiting tasks");
-        scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
-        System.out.println("Processing tasks");
-        scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
-
-        // Testing task shift whenever a client fails
-        Map.Entry<Task,String> entry = scheduler.getProcessingTasks().entrySet().iterator().next();
-        Task task2 = entry.getKey();
-        scheduler.shiftTask(task2);
-
-        System.out.println("");
-        System.out.println("Waiting tasks");
-        scheduler.getWaitingTasks().forEach( (task) -> System.out.println(task.getUrl()) );
-        System.out.println("Processing tasks");
-        scheduler.getProcessingTasks().forEach( (task, client) -> System.out.println(task.getUrl()) );
-    }**/
-
 }

@@ -98,13 +98,14 @@ public class ServerHandlers {
                 System.out.println("GetTask received-Buffer");
 
                 GetTaskReq gtr = (GetTaskReq) ri.getMsg();
+                SpreadGroup sp = ri.getSender();
                 try {
                     Task task = scheduler.getTask();
-                    ((SchedulerImp) scheduler).processTask(ri.getSender().toString(), task);
-                    sendMsg(ri.getSender(), new GetTaskRep(gtr.id, task, true));
+                    ((SchedulerImp) scheduler).processTask(sp.toString(), task);
+                    sendMsg(sp, new GetTaskRep(gtr.id, task, true));
                 }
                 catch(NoSuchElementException e){
-                    sendMsg(ri.getSender(), new GetTaskRep(gtr.id, null, false));
+                    sendMsg(sp, new GetTaskRep(gtr.id, null, false));
                 }
             }
             else if(ri.getMsg() instanceof EndTaskReq){
@@ -131,10 +132,10 @@ public class ServerHandlers {
                 try {
                     scheduler.newTask(msg.url);
                     sendMsg(sender.getSender(), new NewTaskRep(msg.id, true));
-                } catch (RepeatedTaskException e) {
+                }
+                catch (RepeatedTaskException e) {
                     sendMsg(sender.getSender(), new NewTaskRep(msg.id, false));
                 }
-
             });
             s.handler(GetTaskReq.class, (sender, msg) -> {
                 System.out.println("GetTask received-Main");
@@ -162,10 +163,11 @@ public class ServerHandlers {
             s.handler(ClientFailure.class, (sender, msg) -> {
                 System.out.println("ClientFailure received");
 
-                ((SchedulerImp)scheduler).shiftTasksFromClient(sender.getSender().toString());
+                ((SchedulerImp) scheduler).shiftTasksFromClient(sender.getSender().toString());
             });
             s.handler(StateReq.class, (sender, msg) -> {
                 System.out.println("StateReq received-Main");
+
                 stateTransfer(sender.getSender());
             });
         });

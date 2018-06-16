@@ -46,7 +46,11 @@ public class RemoteScheduler implements Scheduler {
     private void registerHandlers() {
         tc.execute(() -> {
             s.handler(MembershipInfo.class, (sender, msg) -> {
-                if(msg.isCausedByDisconnect() || msg.isCausedByLeave()){
+                if(msg.isCausedByDisconnect()){
+                    System.out.println("Client failure - " + msg.getDisconnected().toString());
+                    sendMsg(server_group, new ClientFailure(msg.getDisconnected().toString()));
+                }
+                else if(msg.isCausedByLeave()){
                     System.out.println("Client failure - " + msg.getLeft().toString());
                     sendMsg(server_group, new ClientFailure(msg.getLeft().toString()));
                 }
@@ -92,16 +96,17 @@ public class RemoteScheduler implements Scheduler {
 
 
     @Override
-    public void newTask(String url) {
+    public void newTask(String url) throws RepeatedTaskException{
         try {
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
             sendMsg(this.server_group, new NewTaskReq(id_req, url));
-
             NewTaskRep ntr = (NewTaskRep) cf.get();
+
             if(!ntr.res)
-                throw new RepeatedTaskException("Repeated task" + url);
-        } catch (Exception e) { e.printStackTrace(); }
+                throw new RepeatedTaskException("Repeated task" + url +".");
+        }
+        catch (Exception e) { e.printStackTrace(); }
     }
 
     @Override
@@ -111,23 +116,27 @@ public class RemoteScheduler implements Scheduler {
             int id_req = req_id.incrementAndGet();
             sendMsg(this.server_group, new GetTaskReq(id_req));
             GetTaskRep gtr = (GetTaskRep) cf.get();
+
             if(gtr.status)
                 return gtr.res;
-            else throw new NoSuchElementException();
-        } catch (Exception e) { e.printStackTrace(); }
+            else throw new NoSuchElementException("Empty Queue.");
+        }
+        catch (Exception e) { e.printStackTrace(); }
+
         return null;
     }
 
     @Override
-    public void endTask(Task t) {
+    public void endTask(Task t) throws NoSuchElementException{
         try {
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
             sendMsg(this.server_group, new EndTaskReq(id_req, t));
-
             EndTaskRep etr = (EndTaskRep) cf.get();
+
             if(!etr.res)
-                throw new NoSuchElementException();
-        } catch (Exception e) { e.printStackTrace(); }
+                throw new NoSuchElementException("The task isn't marked as pending.");
+        }
+        catch (Exception e) { e.printStackTrace(); }
     }
 }
