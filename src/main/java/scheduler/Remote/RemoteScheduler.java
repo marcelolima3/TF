@@ -60,18 +60,21 @@ public class RemoteScheduler implements Scheduler {
                 if(msg.id == req_id.intValue() && cf!=null){
                     System.out.println("GetTask received");
                     cf.complete(msg);
+                    req_id.incrementAndGet();
                 }
             });
             s.handler(NewTaskRep.class, (sender, msg) -> {
                 if(msg.id == req_id.intValue() && cf!=null){
                     System.out.println("NewTask received");
                     cf.complete(msg);
+                    req_id.incrementAndGet();
                 }
             });
             s.handler(EndTaskRep.class, (sender, msg) -> {
                 if(msg.id == req_id.intValue() && cf!=null) {
                     System.out.println("EndTask received");
                     cf.complete(msg);
+                    req_id.incrementAndGet();
                 }
             });
             try {
