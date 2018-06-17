@@ -11,16 +11,19 @@ public class Client {
         Scheduler scheduler = new RemoteScheduler(id);
 
         try {
-            switch (id) {
-                case 1:
-                    scheduler.newTask("task_0");
+            switch (args[1]) {
+                case "new":
+                    System.out.println("New task: " + args[2]);
+                    scheduler.newTask(args[2]);
                     break;
-                case 2:
+                case "get":
                     Task t = scheduler.getTask();
                     System.out.println("URL: " + t.getUrl());
+                    t.run();
+                    System.out.println("Task done.");
                     scheduler.endTask(t);
                     break;
-                case 3:
+                case "end":
                     Task t2 = scheduler.getTask();
                     System.out.println("URL: " + t2.getUrl());
                     break;
