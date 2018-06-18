@@ -47,41 +47,31 @@ public class RemoteScheduler implements Scheduler {
     private void registerHandlers() throws ExecutionException, InterruptedException {
         tc.execute(() -> {
             s.handler(MembershipInfo.class, (sender, msg) -> {
-                if(msg.isCausedByDisconnect()){
-                    System.out.println("Client failure - " + msg.getDisconnected().toString());
+                if(msg.isCausedByDisconnect())
                     broadcast(server_group, new ClientFailure(msg.getDisconnected().toString()));
-                }
-                else if(msg.isCausedByLeave()){
-                    System.out.println("Client failure - " + msg.getLeft().toString());
+                else if(msg.isCausedByLeave())
                     broadcast(server_group, new ClientFailure(msg.getLeft().toString()));
-                }
             });
             s.handler(GetTaskRep.class, (sender, msg) -> {
                 if(msg.id == req_id.intValue() && cf!=null){
-                    System.out.println("GetTask received");
                     cf.complete(msg);
                     req_id.incrementAndGet();
                 }
             });
             s.handler(NewTaskRep.class, (sender, msg) -> {
                 if(msg.id == req_id.intValue() && cf!=null){
-                    System.out.println("NewTask received");
                     cf.complete(msg);
                     req_id.incrementAndGet();
                 }
             });
             s.handler(EndTaskRep.class, (sender, msg) -> {
                 if(msg.id == req_id.intValue() && cf!=null) {
-                    System.out.println("EndTask received");
                     cf.complete(msg);
                     req_id.incrementAndGet();
                 }
             });
             try {
-                s.open().thenRun(() -> {
-                    System.out.println("Starting...");
-                    s.join(this.client_group);
-                }).get();
+                s.open().thenRun(() ->  s.join(this.client_group) ).get();
             }
             catch (Exception e) { e.printStackTrace(); }
         }).get();

@@ -19,7 +19,7 @@ public class Client {
 
         showMainMenu(main_menu, task_menu, scheduler);
 
-        System.out.println("My job is done.");
+        System.out.println("Good bye!");
     }
 
     private static void showMainMenu(Menu main_menu, Menu task_menu, Scheduler scheduler){
