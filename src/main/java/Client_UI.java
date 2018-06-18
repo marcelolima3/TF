@@ -9,7 +9,7 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Scanner;
 
-public class Client {
+public class Client_UI {
     public static void main(String args[]) throws Exception {
 
         int id = Integer.parseInt(args[0]);
