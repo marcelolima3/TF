@@ -108,7 +108,7 @@ public class RemoteScheduler implements Scheduler {
         catch (Exception e) { e.printStackTrace(); }
 
         if(!ntr.res)
-            throw new RepeatedTaskException("Repeated task" + url +".");
+            throw new RepeatedTaskException("Repeated task " + url +".");
     }
 
     @Override
