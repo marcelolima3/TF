@@ -41,7 +41,7 @@ public class Menu
             System.out.print(" - ");
             System.out.println(this.opcoes.get(i));
         }
-        System.out.println("   0 - Sair");
+        //System.out.println("   0 - Sair");
         System.out.println("*********************************************");
     }
 

@@ -13,7 +13,7 @@ public class Client {
     public static void main(String args[]) throws Exception {
 
         int id = Integer.parseInt(args[0]);
-        Menu main_menu = new Menu(new String[]{"New task", "Get Task"});
+        Menu main_menu = new Menu(new String[]{"New task", "Get Task", "Sair"});
         Menu task_menu = new Menu(new String[]{"End task"});
         Scheduler scheduler = new RemoteScheduler(id);
 
