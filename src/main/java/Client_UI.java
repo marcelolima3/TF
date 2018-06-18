@@ -34,6 +34,8 @@ public class Client_UI {
                 case 2:
                     getTask(scheduler, task_menu);
                     break;
+                case 3:
+                    running = 0;
                 case 0:
                     running = 0;
             }
