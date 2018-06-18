@@ -11,11 +11,10 @@ public class Server {
         int id = Integer.parseInt(args[0]);
         String group = "servers";
 
-        Transport t = new NettyTransport();
         SingleThreadContext tcspread = new SingleThreadContext("srv-%d", new Serializer());
         Spread s = new Spread("srv"+id, true);
 
-        ServerHandlers b = new ServerHandlers(t, s, tcspread, id, group);
+        ServerHandlers b = new ServerHandlers(s, tcspread, id, group);
         b.exe();
     }
 }

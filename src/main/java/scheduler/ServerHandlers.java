@@ -20,7 +20,6 @@ import java.util.NoSuchElementException;
 
 public class ServerHandlers {
     public int id;
-    public Transport t;
     public SingleThreadContext tcspread;
     public Scheduler scheduler;
     public Spread s;
@@ -29,8 +28,7 @@ public class ServerHandlers {
     public List<RequestInfo> buffer;
 
 
-    public ServerHandlers(Transport t, Spread s, SingleThreadContext tcspread, int id, String group) {
-        this.t = t;
+    public ServerHandlers(Spread s, SingleThreadContext tcspread, int id, String group) {
         this.tcspread = tcspread;
         this.id = id;
         this.scheduler = new SchedulerImp();
@@ -63,7 +61,7 @@ public class ServerHandlers {
                 if(this.state_sender == null) {
                     System.out.println("StateRep received");
                     this.state_sender = sender.getSender();
-                    this.scheduler = getState(msg);
+                    this.scheduler = msg.scheduler;
                     processBuffer();
                     registerMainHandlers();
                 }
@@ -168,19 +166,9 @@ public class ServerHandlers {
             s.handler(StateReq.class, (sender, msg) -> {
                 System.out.println("StateReq received-Main");
                 
-                stateTransfer(sender.getSender());
+                directMsg(sender.getSender(), new StateRep(scheduler));
             });
         });
-    }
-
-    private Scheduler getState(StateRep msg) {
-        // TODO implement state transfer for big data
-        return msg.scheduler;
-    }
-
-    private void stateTransfer(SpreadGroup joined){
-        // TODO implement state transfer for big data
-        directMsg(joined, new StateRep(scheduler));
     }
 
     public void directMsg(SpreadGroup group, Object msg){

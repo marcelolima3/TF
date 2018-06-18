@@ -108,46 +108,47 @@ public class RemoteScheduler implements Scheduler {
 
     @Override
     public void newTask(String url) throws RepeatedTaskException{
+        NewTaskRep ntr = null;
         try {
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
             broadcast(this.server_group, new NewTaskReq(id_req, url));
-            NewTaskRep ntr = (NewTaskRep) cf.get();
-
-            if(!ntr.res)
-                throw new RepeatedTaskException("Repeated task" + url +".");
+            ntr = (NewTaskRep) cf.get();
         }
         catch (Exception e) { e.printStackTrace(); }
+
+        if(!ntr.res)
+            throw new RepeatedTaskException("Repeated task" + url +".");
     }
 
     @Override
     public Task getTask() throws NoSuchElementException{
+        GetTaskRep gtr = null;
         try {
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
             broadcast(this.server_group, new GetTaskReq(id_req));
-            GetTaskRep gtr = (GetTaskRep) cf.get();
-
-            if(gtr.status)
-                return gtr.res;
-            else throw new NoSuchElementException("Empty Queue.");
+            gtr = (GetTaskRep) cf.get();
         }
         catch (Exception e) { e.printStackTrace(); }
 
-        return null;
+        if(gtr.status)
+            return gtr.res;
+        throw new NoSuchElementException("Empty Queue.");
     }
 
     @Override
     public void endTask(Task t) throws NoSuchElementException{
+        EndTaskRep etr = null;
         try {
             cf = new CompletableFuture();
             int id_req = req_id.incrementAndGet();
             broadcast(this.server_group, new EndTaskReq(id_req, t));
-            EndTaskRep etr = (EndTaskRep) cf.get();
-
-            if(!etr.res)
-                throw new NoSuchElementException("The task isn't marked as pending.");
+            etr = (EndTaskRep) cf.get();
         }
         catch (Exception e) { e.printStackTrace(); }
+
+        if(!etr.res)
+            throw new NoSuchElementException("The task isn't marked as pending.");
     }
 }

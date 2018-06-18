@@ -3,6 +3,7 @@ import scheduler.Impl.Task;
 import scheduler.Interfaces.Scheduler;
 import scheduler.Remote.RemoteScheduler;
 
+import java.util.NoSuchElementException;
 import java.util.Random;
 
 public class Client {
