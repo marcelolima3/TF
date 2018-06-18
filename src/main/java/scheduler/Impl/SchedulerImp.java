@@ -53,7 +53,6 @@ public class SchedulerImp implements Scheduler, CatalystSerializable {
             if(entry.getValue().equals(client)){
                 waiting_tasks.addFirst(entry.getKey());
                 processing_tasks.remove(entry.getKey());
-                break;
             }
         }
     }
